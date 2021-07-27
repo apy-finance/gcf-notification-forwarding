@@ -36,31 +36,32 @@ exports.pushEventsToWebhook = (event, callback) => {
 
     if (payload != '') {
       // Read the snapshot's detail from the Pub/Sub message
+      const type = payload.resource.type;
+      const methodName = payload.protoPayload.methodName;
       const projectId = payload.resource.labels.project_id;
-      const zone = payload.jsonPayload.resource.zone;
-      const diskName = payload.jsonPayload.resource.name;
+      const functionName = payload.resource.labels.function_name;
+      const region = payload.resource.labels.region;
+      const authenticationEmail = payload.protoPayload.authenticationInfo.principalEmail;
 
       const dateTime = isodate(payload.timestamp);
 
-      const resourceURL = `https://console.cloud.google.com/compute/disksDetail/zones/${zone}/disks/${diskName}?project=${projectId}&supportedpurview=project`;
+      const resourceName = payload.protoPayload.resourceName;
       const projectURL = `https://console.cloud.google.com/home/dashboard?project=${projectId}`;
 
       // Building the event's content. The latter will be pushed to the webhook
       eventBody = {
         'data': [
           {
-            'type': 'disk',
-            'url': resourceURL,
-            'name': diskName,
-
+            'type': type,
+            'resource': resourceName,
+            'name': functionName,
+            'method': methodName,
+            'email': authenticationEmail,
           },
           {
             'type': 'project',
             'project_id': projectId,
             'project_url': projectURL,
-          },
-          {
-            'zone': zone,
           },
           {
             'date_time': dateTime,
