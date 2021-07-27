@@ -35,7 +35,7 @@ exports.pushEventsToWebhook = (event, callback) => {
         JSON.parse(Buffer.from(event.data, 'base64').toString()) : '';
 
     if (payload != '') {
-      // Read the snapshot's detail from the Pub/Sub message
+      // Read the cloud function event's detail from the Pub/Sub message
       const type = payload.resource.type;
       const methodName = payload.protoPayload.methodName;
       const projectId = payload.resource.labels.project_id;
@@ -48,26 +48,15 @@ exports.pushEventsToWebhook = (event, callback) => {
       const resourceName = payload.protoPayload.resourceName;
       const projectURL = `https://console.cloud.google.com/home/dashboard?project=${projectId}`;
 
+      // According to Discord docs (https://discord.com/developers/docs/resources/webhook#execute-webhook), 
+      // you must provide at least one of 'content', 'embeds', or 'file':
+      //
+      // | content: (string)	the message contents (up to 2000 characters)
+      //
       // Building the event's content. The latter will be pushed to the webhook
       eventBody = {
-        'data': [
-          {
-            'type': type,
-            'resource': resourceName,
-            'name': functionName,
-            'method': methodName,
-            'email': authenticationEmail,
-          },
-          {
-            'type': 'project',
-            'project_id': projectId,
-            'project_url': projectURL,
-          },
-          {
-            'date_time': dateTime,
-          },
-        ],
-      };
+        'content': `${type}: ${resourceName}\n\n${functionName}: ${methodName}\n\nauthentication: ${authenticationEmail}\n\n${dateTime}`
+      }
       // Reads Config Parameters
       const WEBHOOK_URL = process.env.WEBHOOK_URL;
 
