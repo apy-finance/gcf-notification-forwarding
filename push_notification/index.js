@@ -55,7 +55,7 @@ exports.pushEventsToWebhook = (event, callback) => {
       //
       // Building the event's content. The latter will be pushed to the webhook
       eventBody = {
-        'content': `${type}: ${resourceName}\n\n${functionName}: ${methodName}\n\nauthentication: ${authenticationEmail}\n\n${dateTime}`
+        'content': `${type}: ${functionName}\n\noperation: ${methodName}\n\nauthentication: ${authenticationEmail}\n\n${dateTime}`
       }
       // Reads Config Parameters
       const WEBHOOK_URL = process.env.WEBHOOK_URL;
