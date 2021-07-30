@@ -37,15 +37,20 @@ exports.pushEventsToWebhook = (event, callback) => {
     if (payload != '') {
       // Read the cloud function event's detail from the Pub/Sub message
       const type = payload.resource.type;
-      const methodName = payload.protoPayload.methodName;
-      const projectId = payload.resource.labels.project_id;
       const functionName = payload.resource.labels.function_name;
-      const region = payload.resource.labels.region;
+
+      const methodName = payload.protoPayload.methodName.split('.').pop();
+      let operation = methodName;
+      if (payload.protoPayload.request) {
+        operation += " Request"
+      };
+
       const authenticationEmail = payload.protoPayload.authenticationInfo.principalEmail;
 
       const dateTime = isodate(payload.timestamp);
 
       const resourceName = payload.protoPayload.resourceName;
+      const projectId = payload.resource.labels.project_id;
       const projectURL = `https://console.cloud.google.com/home/dashboard?project=${projectId}`;
 
       // According to Discord docs (https://discord.com/developers/docs/resources/webhook#execute-webhook), 
@@ -55,8 +60,8 @@ exports.pushEventsToWebhook = (event, callback) => {
       //
       // Building the event's content. The latter will be pushed to the webhook
       eventBody = {
-        'content': `${type}: ${functionName}\n\noperation: ${methodName}\n\nauthentication: ${authenticationEmail}\n\n${dateTime}`
-      }
+        'content': `${type}: ${functionName}\noperation: ${operation}\nauthentication: ${authenticationEmail}\n${dateTime}\n`
+      };
       // Reads Config Parameters
       const WEBHOOK_URL = process.env.WEBHOOK_URL;
 
