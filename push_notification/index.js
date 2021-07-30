@@ -47,7 +47,11 @@ exports.pushEventsToWebhook = (event, callback) => {
 
       const authenticationEmail = payload.protoPayload.authenticationInfo.principalEmail;
 
-      const dateTime = isodate(payload.timestamp);
+      const regex = /\.[0-9]{3,9}Z/;  //milli to nano range
+      let timestamp = payload.timestamp;
+      // remove any subseconds
+      timestamp = timestamp.replace(regex, 'Z');
+      const dateTime = isodate(timestamp);
 
       const resourceName = payload.protoPayload.resourceName;
       const projectId = payload.resource.labels.project_id;
